@@ -198,7 +198,11 @@ func (m *Monitor) heartbeat() *Desc {
 	var d *Desc
 	ctx := context.Background()
 	for i := 1; i <= maxRetryCount; i++ {
-		if m.conn == nil {
+		if m.conn == nil || m.conn.Expired() {
+			if m.conn.Expired() {
+				m.conn.Close()
+				m.conn = nil
+			}
 			conn, err := m.cfg.dialer(ctx, m.endpoint, m.cfg.connOpts...)
 			if err != nil {
 				savedErr = err
