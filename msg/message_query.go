@@ -1,5 +1,7 @@
 package msg
 
+import "fmt"
+
 // Query is a message sent to the server.
 type Query struct {
 	ReqID                int32
@@ -28,3 +30,21 @@ const (
 	Exhaust
 	Partial
 )
+
+// WrapWithMeta wraps the query with meta data.
+func WrapWithMeta(r Request, meta map[string]interface{}) {
+	if len(meta) > 0 {
+		switch typedR := r.(type) {
+		case *Query:
+			typedR.Query = struct {
+				Q interface{}            `bson:"$query"`
+				M map[string]interface{} `bson:",inline"`
+			}{
+				Q: typedR.Query,
+				M: meta,
+			}
+		default:
+			panic(fmt.Sprintf("cannot wrap request(%T) with meta", r))
+		}
+	}
+}
