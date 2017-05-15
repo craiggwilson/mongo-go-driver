@@ -112,7 +112,7 @@ func WithConnString(cs connstring.ConnString) Option {
 				// TODO: I'm not completely sure how I feel about this... It would
 				// suck to have to return an error from this method. And panic seems
 				// sorta right because this app simply won't work like they want
-				// it to if we don't stop now. Any there really isn't anything
+				// it to if we don't stop now. And there really isn't anything
 				// they can do with the error to correct the problem.
 				panic(err)
 			}

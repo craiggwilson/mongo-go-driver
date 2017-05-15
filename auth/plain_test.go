@@ -2,27 +2,29 @@ package auth_test
 
 import (
 	"context"
+	"encoding/base64"
+	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/10gen/mongo-go-driver/bson"
-
-	"reflect"
-
-	"encoding/base64"
-
 	. "github.com/10gen/mongo-go-driver/auth"
+	"github.com/10gen/mongo-go-driver/bson"
 	"github.com/10gen/mongo-go-driver/internal/conntest"
 	"github.com/10gen/mongo-go-driver/internal/msgtest"
 	"github.com/10gen/mongo-go-driver/msg"
+	"github.com/craiggwilson/go-sasl"
+	"github.com/craiggwilson/go-sasl/plain"
 )
 
 func TestPlainAuthenticator_Fails(t *testing.T) {
 	t.Parallel()
 
-	authenticator := PlainAuthenticator{
-		Username: "user",
-		Password: "pencil",
+	authenticator := &SaslAuthenticator{
+		MechName: plain.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return plain.NewClientMech("", "user", "pencil")
+		},
 	}
 
 	saslStartReply := msgtest.CreateCommandReply(bson.D{
@@ -51,9 +53,12 @@ func TestPlainAuthenticator_Fails(t *testing.T) {
 func TestPlainAuthenticator_Extra_server_message(t *testing.T) {
 	t.Parallel()
 
-	authenticator := PlainAuthenticator{
-		Username: "user",
-		Password: "pencil",
+	authenticator := &SaslAuthenticator{
+		MechName: plain.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return plain.NewClientMech("", "user", "pencil")
+		},
 	}
 
 	saslStartReply := msgtest.CreateCommandReply(bson.D{
@@ -87,9 +92,12 @@ func TestPlainAuthenticator_Extra_server_message(t *testing.T) {
 func TestPlainAuthenticator_Succeeds(t *testing.T) {
 	t.Parallel()
 
-	authenticator := PlainAuthenticator{
-		Username: "user",
-		Password: "pencil",
+	authenticator := &SaslAuthenticator{
+		MechName: plain.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return plain.NewClientMech("", "user", "pencil")
+		},
 	}
 
 	saslStartReply := msgtest.CreateCommandReply(bson.D{
@@ -119,6 +127,7 @@ func TestPlainAuthenticator_Succeeds(t *testing.T) {
 		{"mechanism", "PLAIN"},
 		{"payload", payload},
 	}
+
 	if !reflect.DeepEqual(saslStartRequest.Query, expectedCmd) {
 		t.Fatalf("saslStart command was incorrect: %v", saslStartRequest.Query)
 	}

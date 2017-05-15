@@ -6,6 +6,15 @@ import (
 
 	"github.com/10gen/mongo-go-driver/conn"
 	"github.com/10gen/mongo-go-driver/model"
+	"github.com/craiggwilson/go-sasl/gssapi"
+	"github.com/craiggwilson/go-sasl/plain"
+	"github.com/craiggwilson/go-sasl/scramsha1"
+)
+
+const (
+	GSSAPI    = gssapi.MechName
+	PLAIN     = plain.MechName
+	SCRAMSHA1 = scramsha1.MechName
 )
 
 // AuthenticatorFactory constructs an authenticator.

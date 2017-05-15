@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/10gen/mongo-go-driver/bson"
+	"github.com/craiggwilson/go-sasl"
+	"github.com/craiggwilson/go-sasl/scramsha1"
 
 	"reflect"
 
@@ -17,13 +19,22 @@ import (
 	"github.com/10gen/mongo-go-driver/msg"
 )
 
+type constReader []byte
+
+func (cr constReader) Read(dst []byte) (n int, err error) {
+	copy(dst, []byte(cr))
+	return len(dst), nil
+}
+
 func TestScramSHA1Authenticator_Fails(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
+		},
 	}
 
 	saslStartReply := msgtest.CreateCommandReply(bson.D{
@@ -52,13 +63,11 @@ func TestScramSHA1Authenticator_Fails(t *testing.T) {
 func TestScramSHA1Authenticator_Missing_challenge_fields(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -79,7 +88,7 @@ func TestScramSHA1Authenticator_Missing_challenge_fields(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid server response"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -88,13 +97,11 @@ func TestScramSHA1Authenticator_Missing_challenge_fields(t *testing.T) {
 func TestScramSHA1Authenticator_Invalid_server_nonce1(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -115,7 +122,7 @@ func TestScramSHA1Authenticator_Invalid_server_nonce1(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid nonce"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: expected nonce"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -124,13 +131,11 @@ func TestScramSHA1Authenticator_Invalid_server_nonce1(t *testing.T) {
 func TestScramSHA1Authenticator_Invalid_server_nonce2(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -151,7 +156,7 @@ func TestScramSHA1Authenticator_Invalid_server_nonce2(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid nonce"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: nonce mismatch"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -160,13 +165,11 @@ func TestScramSHA1Authenticator_Invalid_server_nonce2(t *testing.T) {
 func TestScramSHA1Authenticator_No_salt(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -187,7 +190,7 @@ func TestScramSHA1Authenticator_No_salt(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid salt"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: expected salt"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -196,13 +199,11 @@ func TestScramSHA1Authenticator_No_salt(t *testing.T) {
 func TestScramSHA1Authenticator_No_iteration_count(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -223,7 +224,7 @@ func TestScramSHA1Authenticator_No_iteration_count(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid iteration count"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: expected iteration-count"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -232,13 +233,11 @@ func TestScramSHA1Authenticator_No_iteration_count(t *testing.T) {
 func TestScramSHA1Authenticator_Invalid_iteration_count(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -259,7 +258,7 @@ func TestScramSHA1Authenticator_Invalid_iteration_count(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid iteration count"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: invalid iteration-count"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -268,13 +267,11 @@ func TestScramSHA1Authenticator_Invalid_iteration_count(t *testing.T) {
 func TestScramSHA1Authenticator_Invalid_server_signature(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -302,7 +299,7 @@ func TestScramSHA1Authenticator_Invalid_server_signature(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid server signature"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: server signature mismatch"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -311,13 +308,11 @@ func TestScramSHA1Authenticator_Invalid_server_signature(t *testing.T) {
 func TestScramSHA1Authenticator_Server_provided_error(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -345,7 +340,7 @@ func TestScramSHA1Authenticator_Server_provided_error(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": server passed error"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: server passed error"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -354,13 +349,11 @@ func TestScramSHA1Authenticator_Server_provided_error(t *testing.T) {
 func TestScramSHA1Authenticator_Invalid_final_message(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -388,7 +381,7 @@ func TestScramSHA1Authenticator_Invalid_final_message(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": invalid final message"
+	errPrefix := "sasl mechanism SCRAM-SHA-1: client failed to provide response: invalid challenge: expected server signature"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -397,13 +390,11 @@ func TestScramSHA1Authenticator_Invalid_final_message(t *testing.T) {
 func TestScramSHA1Authenticator_Extra_message(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
-		Username: "user",
-		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
@@ -437,7 +428,7 @@ func TestScramSHA1Authenticator_Extra_message(t *testing.T) {
 		t.Fatalf("expected an error but got none")
 	}
 
-	errPrefix := "unable to authenticate using mechanism \"SCRAM-SHA-1\": unexpected server challenge"
+	errPrefix := "unexpected server challenge"
 	if !strings.HasPrefix(err.Error(), errPrefix) {
 		t.Fatalf("expected an err starting with \"%s\" but got \"%s\"", errPrefix, err)
 	}
@@ -446,13 +437,13 @@ func TestScramSHA1Authenticator_Extra_message(t *testing.T) {
 func TestScramSHA1Authenticator_Succeeds(t *testing.T) {
 	t.Parallel()
 
-	authenticator := ScramSHA1Authenticator{
-		DB:       "source",
+	authenticator := &SaslAuthenticator{
+		MechName: scramsha1.MechName,
+		Source:   "source",
 		Username: "user",
 		Password: "pencil",
-		NonceGenerator: func(dst []byte) error {
-			copy(dst, []byte("fyko+d2lbbFgONRv9qkxdawL"))
-			return nil
+		Factory: func() sasl.ClientMech {
+			return scramsha1.NewClientMech("", "user", "1c33006ec1ffd90f9cadcbcc0e118200", 24, constReader("fyko+d2lbbFgONRv9qkxdawL"))
 		},
 	}
 
