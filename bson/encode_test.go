@@ -8,6 +8,7 @@ package bson
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 
@@ -635,6 +636,7 @@ func reflectionEncoderTest(t *testing.T) {
 				N *Element
 				O *Document
 				P Reader
+				Q *MyStructString
 			}{
 				A: true,
 				B: 123,
@@ -655,6 +657,7 @@ func reflectionEncoderTest(t *testing.T) {
 				N: EC.Null("N"),
 				O: NewDocument(EC.Int64("countdown", 9876543210)),
 				P: Reader{0x05, 0x00, 0x00, 0x00, 0x00},
+				Q: &MyStructString{"funny"},
 			},
 			docToBytes(NewDocument(
 				EC.Boolean("a", true),
@@ -672,6 +675,7 @@ func reflectionEncoderTest(t *testing.T) {
 				EC.Null("N"),
 				EC.SubDocumentFromElements("o", EC.Int64("countdown", 9876543210)),
 				EC.SubDocumentFromElements("p"),
+				EC.String("q", "funny"),
 			)),
 			nil,
 		},
@@ -696,6 +700,8 @@ func reflectionEncoderTest(t *testing.T) {
 				O []*Element
 				P []*Document
 				Q []Reader
+				R []*MyStructString
+				S [2]*MyStructString
 			}{
 				A: []bool{true},
 				B: []int32{123},
@@ -719,6 +725,8 @@ func reflectionEncoderTest(t *testing.T) {
 				O: []*Element{EC.Null("N")},
 				P: []*Document{NewDocument(EC.Int64("countdown", 9876543210))},
 				Q: []Reader{{0x05, 0x00, 0x00, 0x00, 0x00}},
+				R: []*MyStructString{{"one"}, {"two"}},
+				S: [2]*MyStructString{{"one"}, {"two"}},
 			},
 			docToBytes(NewDocument(
 				EC.ArrayFromElements("a", VC.Boolean(true)),
@@ -737,6 +745,53 @@ func reflectionEncoderTest(t *testing.T) {
 				EC.ArrayFromElements("o", VC.Null()),
 				EC.ArrayFromElements("p", VC.DocumentFromElements(EC.Int64("countdown", 9876543210))),
 				EC.ArrayFromElements("q", VC.DocumentFromElements()),
+				EC.ArrayFromElements("r", VC.String("one"), VC.String("two")),
+				EC.ArrayFromElements("s", VC.String("one"), VC.String("two")),
+			)),
+			nil,
+		},
+		{
+			"[]Getter",
+			[]*MyStructString{{"foo"}, {"bar"}, {"baz"}},
+			[]byte{
+				0x26, 0x00, 0x00, 0x00,
+				0x02, '0', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'f', 'o', 'o', 0x00,
+				0x02, '1', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'b', 'a', 'r', 0x00,
+				0x02, '2', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'b', 'a', 'z', 0x00,
+				0x00,
+			},
+			nil,
+		},
+		{
+			"[3]Getter",
+			[3]*MyStructString{{"foo"}, {"bar"}, {"baz"}},
+			[]byte{
+				0x26, 0x00, 0x00, 0x00,
+				0x02, '0', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'f', 'o', 'o', 0x00,
+				0x02, '1', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'b', 'a', 'r', 0x00,
+				0x02, '2', 0x00,
+				0x04, 0x00, 0x00, 0x00,
+				'b', 'a', 'z', 0x00,
+				0x00,
+			},
+			nil,
+		},
+		{
+			"map[string]Getter",
+			map[string]*MyStructString{"foo": &MyStructString{"one"}, "bar": &MyStructString{"two"}},
+			docToBytes(NewDocument(
+				EC.String("foo", "one"),
+				EC.String("bar", "two"),
 			)),
 			nil,
 		},
@@ -770,3 +825,37 @@ func docToBytes(d *Document) []byte {
 type byteMarshaler []byte
 
 func (bm byteMarshaler) MarshalBSON() ([]byte, error) { return bm, nil }
+
+type MyStructString struct {
+	s string
+}
+
+func (m *MyStructString) GetBSON() (interface{}, error) {
+	return m.s, nil
+}
+
+func (m *MyStructString) SetBSON(v interface{}) error {
+	switch typedV := v.(type) {
+	case string:
+		m.s = typedV
+		return nil
+	default:
+		return errors.New("MyString only supports reading a string")
+	}
+}
+
+type MyString string
+
+func (m *MyString) GetBSON() (interface{}, error) {
+	return string(), nil
+}
+
+func (m *MyStructString) SetBSON(v interface{}) error {
+	switch typedV := v.(type) {
+	case string:
+		m.s = typedV
+		return nil
+	default:
+		return errors.New("MyString only supports reading a string")
+	}
+}

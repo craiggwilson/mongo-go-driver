@@ -23,6 +23,14 @@ var tByteSlice = reflect.TypeOf(([]byte)(nil))
 var tByte = reflect.TypeOf(byte(0x00))
 var tElement = reflect.TypeOf((*Element)(nil))
 
+type Getter interface {
+	GetBSON() (interface{}, error)
+}
+
+type Setter interface {
+	SetBSON(interface{}) error
+}
+
 // Marshaler describes a type that can marshal a BSON representation of itself into bytes.
 type Marshaler interface {
 	MarshalBSON() ([]byte, error)
@@ -152,6 +160,12 @@ func (e *encoder) Encode(v interface{}) error {
 			return err
 		}
 		_, err = e.w.Write(t)
+	case Getter:
+		v, err := t.GetBSON()
+		if err != nil {
+			return err
+		}
+		return e.Encode(v)
 	default:
 		var elems []*Element
 		rval := reflect.ValueOf(v)
@@ -299,7 +313,15 @@ func (e *encoder) encodeMap(val reflect.Value) ([]*Element, error) {
 		case Reader:
 			elems = append(elems, EC.SubDocumentFromReader(key, t))
 			continue
+		case Getter:
+			v, err := t.GetBSON()
+			if err != nil {
+				return nil, err
+			}
+
+			rval = reflect.ValueOf(v)
 		}
+
 		rval = e.underlyingVal(rval)
 
 		elem, err := e.elemFromValue(key, rval, false)
@@ -326,7 +348,15 @@ func (e *encoder) encodeSlice(val reflect.Value) ([]*Element, error) {
 		case Reader:
 			elems = append(elems, EC.SubDocumentFromReader(key, t))
 			continue
+		case Getter:
+			v, err := t.GetBSON()
+			if err != nil {
+				return nil, err
+			}
+
+			sval = reflect.ValueOf(v)
 		}
+
 		sval = e.underlyingVal(sval)
 		elem, err := e.elemFromValue(key, sval, false)
 		if err != nil {
@@ -354,6 +384,13 @@ func (e *encoder) encodeSliceAsArray(rval reflect.Value, minsize bool) ([]*Value
 		case Reader:
 			vals = append(vals, VC.DocumentFromReader(t))
 			continue
+		case Getter:
+			v, err := t.GetBSON()
+			if err != nil {
+				return nil, err
+			}
+
+			sval = reflect.ValueOf(v)
 		}
 
 		sval = e.underlyingVal(sval)
@@ -367,6 +404,16 @@ func (e *encoder) encodeSliceAsArray(rval reflect.Value, minsize bool) ([]*Value
 }
 
 func (e *encoder) encodeStruct(val reflect.Value) ([]*Element, error) {
+	// if getter, ok := val.Interface().(Getter); ok {
+	// 	fmt.Println("HERE")
+	// 	v, err := getter.GetBSON()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	return e.reflectEncode(reflect.ValueOf(v))
+	// }
+
 	elems := make([]*Element, 0, val.NumField())
 	sType := val.Type()
 
@@ -412,7 +459,15 @@ func (e *encoder) encodeStruct(val reflect.Value) ([]*Element, error) {
 		case Reader:
 			elems = append(elems, EC.SubDocumentFromReader(key, t))
 			continue
+		case Getter:
+			v, err := t.GetBSON()
+			if err != nil {
+				return nil, err
+			}
+
+			field = reflect.ValueOf(v)
 		}
+
 		field = e.underlyingVal(field)
 
 		if inline {
