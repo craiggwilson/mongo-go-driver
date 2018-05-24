@@ -5,27 +5,31 @@ import (
 	"fmt"
 )
 
-var ErrNotElement = errors.New("not positioned on an element")
-var ErrNotValue = errors.New("not positioned on a value")
+var EOA = errors.New("end of array")
+var EOD = errors.New("end of document")
 
-func NewErrValueType(currentType, attemptedType Type) error {
-	return ErrValueType{
+var errInvalidDocumentLength = errors.New("invalid document length")
+var errNotElement = errors.New("not positioned on an element")
+var errNotValue = errors.New("not positioned on a value")
+
+func newErrValueType(currentType, attemptedType Type) error {
+	return errValueType{
 		currentType:   currentType,
 		attemptedType: attemptedType,
 	}
 }
 
-type ErrValueType struct {
+type errValueType struct {
 	currentType   Type
 	attemptedType Type
 }
 
-func (e ErrValueType) Error() string {
+func (e errValueType) Error() string {
 	return fmt.Sprintf("positioned on %s, but attempted to read %s", e.currentType, e.attemptedType)
 }
 
-type ErrInvalidValue string
+type errInvalidValue string
 
-func (e ErrInvalidValue) Error() string {
+func (e errInvalidValue) Error() string {
 	return string(e)
 }
