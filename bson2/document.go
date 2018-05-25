@@ -85,7 +85,8 @@ func (c *DocumentCodec) Decode(r ValueReader, value interface{}) error {
 			return err
 		}
 
-		bytes, err := vr.ReadBytes()
+		bytes := make([]byte, vr.Size())
+		err = vr.ReadBytes(bytes)
 		if err != nil {
 			return err
 		}

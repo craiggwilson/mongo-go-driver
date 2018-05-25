@@ -97,7 +97,8 @@ func validateBsonDocument(t *testing.T, bsonReader DocumentReader) error {
 				return err
 			}
 		default:
-			_, err := vr.ReadBytes()
+			bytes := make([]byte, vr.Size())
+			err := vr.ReadBytes(bytes)
 			if err != nil {
 				return err
 			}
