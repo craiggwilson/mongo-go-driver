@@ -177,7 +177,6 @@ func (r *ioReader) ReadElement() (string, ValueReader, error) {
 		startPosition := r.docStartPositionStack[r.currentDepth]
 		size := r.docSizeStack[r.currentDepth]
 		if r.r.position-startPosition != size {
-			fmt.Println(r.r.position, startPosition, size)
 			// TODO: use start position for this error report
 			return "", nil, r.wrapError(errInvalidDocumentLength)
 		}
@@ -240,7 +239,7 @@ func (r *ioReader) ReadString() (string, error) {
 	}
 
 	r.onElement = true
-	return string(r.r.temp[4 : r.valueSize-5]), nil
+	return string(r.r.temp[4 : r.valueSize-1]), nil
 }
 
 func (r *ioReader) Size() int {

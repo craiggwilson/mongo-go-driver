@@ -35,17 +35,17 @@ func TestReader(t *testing.T) {
 			err:   errors.New("position 5: invalid document length"),
 		},
 		{
-			name:  "Subdocument length too long: eats outer terminator",
+			name:  "sub document length too long: eats outer terminator",
 			input: "1800000003666F6F000F0000001062617200FFFFFF7F0000",
 			err:   errors.New("position 23: invalid document length"),
 		},
 		{
-			name:  "Subdocument length too short: leaks terminator",
+			name:  "sub document length too short: leaks terminator",
 			input: "1500000003666F6F000A0000000862617200010000",
 			err:   errors.New("position 20: invalid document length"),
 		},
 		{
-			name:  "Invalid subdocument: bad string length in field",
+			name:  "sub document invalid: bad string length in field",
 			input: "1C00000003666F6F001200000002626172000500000062617A000000",
 			err:   errors.New("position 28: invalid document length"),
 		},
