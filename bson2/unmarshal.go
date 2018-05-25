@@ -17,7 +17,7 @@ func UnmarshalRegistry(r io.Reader, v interface{}, reg *CodecRegistry) error {
 		return fmt.Errorf("could not find codec for type %v", t)
 	}
 
-	vr, err := NewValueReader(r, TypeDocument)
+	vr, err := NewValueReaderFromIO(r, TypeDocument)
 	if err != nil {
 		return err
 	}
