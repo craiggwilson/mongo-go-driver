@@ -11,7 +11,7 @@ func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (inte
 	var ok bool
 	if v != nil {
 		if target, ok = v.(*M); !ok {
-			return nil, fmt.Errorf("%T can only be used to decode *bson.D", c)
+			return nil, fmt.Errorf("%T can only be used to decode *bson2.M", c)
 		}
 	} else {
 		target = &M{}

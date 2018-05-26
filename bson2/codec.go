@@ -9,6 +9,7 @@ func NewCodecRegistry() *CodecRegistry {
 		reflect.TypeOf(&D{}):    &DCodec{},
 		reflect.TypeOf(&M{}):    &MCodec{},
 		reflect.TypeOf(&RawD{}): &RawDCodec{},
+		reflect.TypeOf(&Raw{}):  &RawCodec{},
 	}
 
 	return &CodecRegistry{

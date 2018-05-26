@@ -44,7 +44,7 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (i
 	var ok bool
 	if v != nil {
 		if target, ok = v.(*RawD); !ok {
-			return nil, fmt.Errorf("%T can only be used to decode *bson.D", c)
+			return nil, fmt.Errorf("%T can only be used to decode *bson2.RawD", c)
 		}
 	} else {
 		target = &RawD{}
@@ -78,5 +78,25 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (i
 	}
 
 	*target = RawD(elems)
+	return target, nil
+}
+
+type RawCodec struct{}
+
+func (c *RawCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (interface{}, error) {
+	var target *Raw
+	var ok bool
+	if v != nil {
+		if target, ok = v.(*Raw); !ok {
+			return nil, fmt.Errorf("%T can only be used to decode *bson2.Raw", c)
+		}
+	} else {
+		target = &Raw{}
+	}
+
+	target.Kind = byte(vr.Type())
+	target.Data = make([]byte, vr.Size())
+	vr.ReadBytes(target.Data)
+	target.reg = reg
 	return target, nil
 }
