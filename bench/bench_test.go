@@ -1,7 +1,6 @@
 package bench
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/mongodb/mongo-go-driver/bson"
@@ -11,41 +10,36 @@ import (
 
 func benchmarkBsonDocument(input []byte, b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		r := bytes.NewReader(input)
 		target := bson.NewDocument()
-		target.ReadFrom(r)
+		bson.Unmarshal(input, target)
 	}
 }
 
 func benchmarkBson2D(input []byte, b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		r := bytes.NewReader(input)
 		target := &bson2.D{}
-		bson2.Unmarshal(r, target)
+		bson2.Unmarshal(input, target)
 	}
 }
 
 func benchmarkBson2M(input []byte, b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		r := bytes.NewReader(input)
 		target := &bson2.M{}
-		bson2.Unmarshal(r, target)
+		bson2.Unmarshal(input, target)
 	}
 }
 
 func benchmarkBson2RawD(input []byte, b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		r := bytes.NewReader(input)
 		target := &bson2.RawD{}
-		bson2.Unmarshal(r, target)
+		bson2.Unmarshal(input, target)
 	}
 }
 
 func benchmarkBson2Raw(input []byte, b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		r := bytes.NewReader(input)
 		target := &bson2.Raw{}
-		bson2.Unmarshal(r, target)
+		bson2.Unmarshal(input, target)
 	}
 }
 
@@ -70,38 +64,38 @@ func benchmarkMgoRawD(input []byte, b *testing.B) {
 	}
 }
 
-func BenchmarkSmallBsonDocument(b *testing.B) { benchmarkBsonDocument(small, b) }
-func BenchmarkSmallBson2D(b *testing.B)       { benchmarkBson2D(small, b) }
-func BenchmarkSmallBson2M(b *testing.B)       { benchmarkBson2M(small, b) }
-func BenchmarkSmallBson2RawD(b *testing.B)    { benchmarkBson2RawD(small, b) }
-func BenchmarkSmallBson2Raw(b *testing.B)     { benchmarkBson2Raw(small, b) }
-func BenchmarkSmallMgoD(b *testing.B)         { benchmarkMgoD(small, b) }
-func BenchmarkSmallMgoM(b *testing.B)         { benchmarkMgoM(small, b) }
-func BenchmarkSmallMgoRawD(b *testing.B)      { benchmarkMgoRawD(small, b) }
+func BenchmarkSmall_Bson_Document(b *testing.B) { benchmarkBsonDocument(small, b) }
+func BenchmarkSmall_Bson2_D(b *testing.B)       { benchmarkBson2D(small, b) }
+func BenchmarkSmall_Bson2_M(b *testing.B)       { benchmarkBson2M(small, b) }
+func BenchmarkSmall_Bson2_RawD(b *testing.B)    { benchmarkBson2RawD(small, b) }
+func BenchmarkSmall_Bson2_Raw(b *testing.B)     { benchmarkBson2Raw(small, b) }
+func BenchmarkSmall_Mgo_D(b *testing.B)         { benchmarkMgoD(small, b) }
+func BenchmarkSmall_Mgo_M(b *testing.B)         { benchmarkMgoM(small, b) }
+func BenchmarkSmall_Mgo_RawD(b *testing.B)      { benchmarkMgoRawD(small, b) }
 
-func BenchmarkSmall2BsonDocument(b *testing.B) { benchmarkBsonDocument(small2, b) }
-func BenchmarkSmall2Bson2D(b *testing.B)       { benchmarkBson2D(small2, b) }
-func BenchmarkSmall2Bson2M(b *testing.B)       { benchmarkBson2M(small2, b) }
-func BenchmarkSmall2Bson2RawD(b *testing.B)    { benchmarkBson2RawD(small2, b) }
-func BenchmarkSmall2Bson2Raw(b *testing.B)     { benchmarkBson2Raw(small2, b) }
-func BenchmarkSmall2MgoD(b *testing.B)         { benchmarkMgoD(small2, b) }
-func BenchmarkSmall2MgoM(b *testing.B)         { benchmarkMgoM(small2, b) }
-func BenchmarkSmall2MgoRawD(b *testing.B)      { benchmarkMgoRawD(small2, b) }
+func BenchmarkSmall2_Bson_Document(b *testing.B) { benchmarkBsonDocument(small2, b) }
+func BenchmarkSmall2_Bson2_D(b *testing.B)       { benchmarkBson2D(small2, b) }
+func BenchmarkSmall2_Bson2_M(b *testing.B)       { benchmarkBson2M(small2, b) }
+func BenchmarkSmall2_Bson2_RawD(b *testing.B)    { benchmarkBson2RawD(small2, b) }
+func BenchmarkSmall2_Bson2_Raw(b *testing.B)     { benchmarkBson2Raw(small2, b) }
+func BenchmarkSmall2_Mgo_D(b *testing.B)         { benchmarkMgoD(small2, b) }
+func BenchmarkSmall2_Mgo_M(b *testing.B)         { benchmarkMgoM(small2, b) }
+func BenchmarkSmall2_Mgo_RawD(b *testing.B)      { benchmarkMgoRawD(small2, b) }
 
-func BenchmarkLargeFlatBsonDocument(b *testing.B) { benchmarkBsonDocument(largeFlat, b) }
-func BenchmarkLargeFlatBson2D(b *testing.B)       { benchmarkBson2D(largeFlat, b) }
-func BenchmarkLargeFlatBson2M(b *testing.B)       { benchmarkBson2M(largeFlat, b) }
-func BenchmarkLargeFlatBson2RawD(b *testing.B)    { benchmarkBson2RawD(largeFlat, b) }
-func BenchmarkLargeFlatBson2Raw(b *testing.B)     { benchmarkBson2Raw(largeFlat, b) }
-func BenchmarkLargeFlatMgoD(b *testing.B)         { benchmarkMgoD(largeFlat, b) }
-func BenchmarkLargeFlatMgoM(b *testing.B)         { benchmarkMgoM(largeFlat, b) }
-func BenchmarkLargeFlatMgoRawD(b *testing.B)      { benchmarkMgoRawD(largeFlat, b) }
+func BenchmarkLargeFlat_Bson_Document(b *testing.B) { benchmarkBsonDocument(largeFlat, b) }
+func BenchmarkLargeFlat_Bson2_D(b *testing.B)       { benchmarkBson2D(largeFlat, b) }
+func BenchmarkLargeFlat_Bson2_M(b *testing.B)       { benchmarkBson2M(largeFlat, b) }
+func BenchmarkLargeFlat_Bson2_RawD(b *testing.B)    { benchmarkBson2RawD(largeFlat, b) }
+func BenchmarkLargeFlat_Bson2_Raw(b *testing.B)     { benchmarkBson2Raw(largeFlat, b) }
+func BenchmarkLargeFlat_Mgo_D(b *testing.B)         { benchmarkMgoD(largeFlat, b) }
+func BenchmarkLargeFlat_Mgo_M(b *testing.B)         { benchmarkMgoM(largeFlat, b) }
+func BenchmarkLargeFlat_Mgo_RawD(b *testing.B)      { benchmarkMgoRawD(largeFlat, b) }
 
-func BenchmarkLargeDeepBsonDocument(b *testing.B) { benchmarkBsonDocument(largeDeep, b) }
-func BenchmarkLargeDeepBson2D(b *testing.B)       { benchmarkBson2D(largeDeep, b) }
-func BenchmarkLargeDeepBson2M(b *testing.B)       { benchmarkBson2M(largeDeep, b) }
-func BenchmarkLargeDeepBson2RawD(b *testing.B)    { benchmarkBson2RawD(largeDeep, b) }
-func BenchmarkLargeDeepBson2Raw(b *testing.B)     { benchmarkBson2Raw(largeDeep, b) }
-func BenchmarkLargeDeepMgoD(b *testing.B)         { benchmarkMgoD(largeDeep, b) }
-func BenchmarkLargeDeepMgoM(b *testing.B)         { benchmarkMgoM(largeDeep, b) }
-func BenchmarkLargeDeepMgoRawD(b *testing.B)      { benchmarkMgoRawD(largeDeep, b) }
+func BenchmarkLargeDeep_Bson_Document(b *testing.B) { benchmarkBsonDocument(largeDeep, b) }
+func BenchmarkLargeDeep_Bson_2D(b *testing.B)       { benchmarkBson2D(largeDeep, b) }
+func BenchmarkLargeDeep_Bson_2M(b *testing.B)       { benchmarkBson2M(largeDeep, b) }
+func BenchmarkLargeDeep_Bson_2RawD(b *testing.B)    { benchmarkBson2RawD(largeDeep, b) }
+func BenchmarkLargeDeep_Bson_2Raw(b *testing.B)     { benchmarkBson2Raw(largeDeep, b) }
+func BenchmarkLargeDeep_Mgo_D(b *testing.B)         { benchmarkMgoD(largeDeep, b) }
+func BenchmarkLargeDeep_Mgo_M(b *testing.B)         { benchmarkMgoM(largeDeep, b) }
+func BenchmarkLargeDeep_Mgo_RawD(b *testing.B)      { benchmarkMgoRawD(largeDeep, b) }

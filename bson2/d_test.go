@@ -1,7 +1,6 @@
 package bson2
 
 import (
-	"bytes"
 	"encoding/hex"
 	"testing"
 
@@ -9,12 +8,12 @@ import (
 )
 
 func TestDCodec(t *testing.T) {
-	b, err := hex.DecodeString("160000000378000E0000000261000200000062000000")
+	input, err := hex.DecodeString("160000000378000E0000000261000200000062000000")
 	require.NoError(t, err)
 
 	target := D{}
 
-	err = Unmarshal(bytes.NewReader(b), &target)
+	err = Unmarshal(input, &target)
 	require.NoError(t, err)
 
 	expected := D{

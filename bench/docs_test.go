@@ -55,9 +55,8 @@ func buildLargeDeepDocument() *bson.Document {
 }
 
 // func TestPrint(t *testing.T) {
-// 	r := bytes.NewBuffer(largeDeep)
 // 	target := &bson2.D{}
-// 	bson2.Unmarshal(r, target)
+// 	bson2.Unmarshal(largeDeep, target)
 
 // 	fmt.Printf("%# v", target)
 // 	t.Fail()

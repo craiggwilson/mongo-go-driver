@@ -2,22 +2,21 @@ package bson2
 
 import (
 	"fmt"
-	"io"
 	"reflect"
 )
 
-func Unmarshal(r io.Reader, v interface{}) error {
-	return UnmarshalRegistry(r, v, globalRegistry)
+func Unmarshal(input []byte, v interface{}) error {
+	return UnmarshalRegistry(input, v, globalRegistry)
 }
 
-func UnmarshalRegistry(r io.Reader, v interface{}, reg *CodecRegistry) error {
+func UnmarshalRegistry(input []byte, v interface{}, reg *CodecRegistry) error {
 	t := reflect.TypeOf(v)
 	codec, ok := reg.Lookup(t)
 	if !ok {
 		return fmt.Errorf("could not find codec for type %v", t)
 	}
 
-	vr, err := NewValueReaderFromIO(r, TypeDocument)
+	vr, err := NewValueReader(input, TypeDocument)
 	if err != nil {
 		return err
 	}

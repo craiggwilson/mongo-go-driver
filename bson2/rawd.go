@@ -1,7 +1,6 @@
 package bson2
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 )
@@ -27,8 +26,7 @@ func (raw Raw) Unmarshal(v interface{}) error {
 		return fmt.Errorf("could not find codec for type %v", t)
 	}
 
-	r := bytes.NewReader(raw.Data)
-	vr, err := NewValueReaderFromIO(r, Type(raw.Kind))
+	vr, err := NewValueReader(raw.Data, Type(raw.Kind))
 	if err != nil {
 		return err
 	}

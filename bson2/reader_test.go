@@ -1,7 +1,6 @@
 package bson2
 
 import (
-	"bytes"
 	"encoding/hex"
 	"errors"
 	"testing"
@@ -58,7 +57,7 @@ func TestReader(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			bsonReader, err := NewDocumentReaderFromIO(bytes.NewBuffer(input))
+			bsonReader, err := NewDocumentReader(input)
 			if err != nil {
 				t.Fatal(err)
 			}
