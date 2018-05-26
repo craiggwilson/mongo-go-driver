@@ -36,17 +36,17 @@ func NewDocumentReader(input []byte) (DocumentReader, error) {
 }
 
 func NewValueReader(input []byte, t Type) (ValueReader, error) {
-	ioReader := &reader{
-		data:      input,
-		valueType: t,
+	r := &reader{
+		data: input,
 	}
 
-	err := ioReader.setValueSize()
+	r.state.valueType = t
+	err := r.setValueSize()
 	if err != nil {
 		return nil, err
 	}
 
-	return ioReader, nil
+	return r, nil
 }
 
 type mode byte
@@ -58,51 +58,85 @@ const (
 
 type reader struct {
 	data []byte
+	pos  int
 
-	// state
-	docStartPositionStack []int
-	docSizeStack          []int
-	currentDepth          int
-	onElement             bool
-	pos                   int
-	valueSize             int
-	valueType             Type
+	state readerState
+}
+
+type readerState struct {
+	prev *readerState
+
+	docStartPos int
+	docSize     int
+	depth       int
+	onElement   bool
+	valueSize   int
+	valueType   Type
+}
+
+func (s *readerState) push() {
+	if s.depth > 0 {
+		s.prev = &readerState{
+			prev:        s.prev,
+			docStartPos: s.docStartPos,
+			docSize:     s.docSize,
+			depth:       s.depth,
+			onElement:   s.onElement,
+			valueSize:   s.valueSize,
+			valueType:   s.valueType,
+		}
+	}
+	s.depth++
+}
+
+func (s *readerState) pop() {
+	if s.prev != nil {
+		s.docStartPos = s.prev.docStartPos
+		s.docSize = s.prev.docSize
+		s.depth = s.prev.depth
+		s.onElement = s.prev.onElement
+		s.valueSize = s.prev.valueSize
+		s.valueType = s.prev.valueType
+		s.prev = s.prev.prev
+	} else {
+		s.depth--
+	}
 }
 
 func (r *reader) ensureValue(t Type) error {
-	if r.valueType != t {
-		return r.wrapError(newErrValueType(r.valueType, t))
+	if r.state.valueType != t {
+		return r.wrapError(newErrValueType(r.state.valueType, t))
 	}
-	if r.onElement {
+	if r.state.onElement {
 		return r.wrapError(errNotValue)
 	}
 	return nil
 }
 
 func (r *reader) setValueSize() error {
-	switch r.valueType {
+	switch r.state.valueType {
 	case TypeBoolean:
-		r.valueSize = 1
+		r.state.valueSize = 1
 	case TypeDocument:
 		sizeBytes, err := r.peekBytes(4)
 		if err != nil {
 			return err
 		}
 
-		r.valueSize = int(binary.LittleEndian.Uint32(sizeBytes))
+		r.state.valueSize = int(binary.LittleEndian.Uint32(sizeBytes))
 	case TypeInt32:
-		r.valueSize = 4
+		r.state.valueSize = 4
 	case TypeInt64:
-		r.valueSize = 8
+		r.state.valueSize = 8
 	case TypeString:
 		sizeBytes, err := r.peekBytes(4)
 		if err != nil {
 			return err
 		}
 
-		r.valueSize = int(binary.LittleEndian.Uint32(sizeBytes)) + 4 // size is not included in string's size
+		r.state.valueSize = int(binary.LittleEndian.Uint32(sizeBytes)) + 4 // size is not included in string's size
 	default:
-		return fmt.Errorf("unsupported bson type %v", r.valueType)
+		return fmt.Errorf("unsupported bson type %v", r.state.valueType)
 	}
 
 	return nil
@@ -122,7 +156,7 @@ func (r *reader) ReadBoolean() (bool, error) {
 		return false, r.wrapError(err)
 	}
 
-	r.onElement = true
+	r.state.onElement = true
 
 	if b > 1 {
 		return false, r.wrapError(errInvalidValue(fmt.Sprintf("invalid byte for boolean, %s", b)))
@@ -132,15 +166,15 @@ func (r *reader) ReadBoolean() (bool, error) {
 }
 
 func (r *reader) ReadBytes(buf []byte) error {
-	if r.onElement {
+	if r.state.onElement {
 		return r.wrapError(errNotValue)
 	}
 
-	if len(buf) != r.valueSize {
-		return r.wrapError(fmt.Errorf("buffer must be of size %d, but got %d", r.valueSize, len(buf)))
+	if len(buf) != r.state.valueSize {
+		return r.wrapError(fmt.Errorf("buffer must be of size %d, but got %d", r.state.valueSize, len(buf)))
 	}
 
-	r.onElement = true
+	r.state.onElement = true
 	data, err := r.readBytes(len(buf))
 	if err != nil {
 		return r.wrapError(err)
@@ -154,22 +188,22 @@ func (r *reader) ReadDocument() (DocumentReader, error) {
 		return nil, err
 	}
 
-	r.currentDepth++
-	r.docStartPositionStack = append(r.docStartPositionStack, r.pos)
+	// save current state if necessary
+	r.state.push()
+	r.state.docStartPos = r.pos
 
 	data, err := r.readBytes(4)
 	if err != nil {
 		return nil, r.wrapError(err)
 	}
 
-	size := int(binary.LittleEndian.Uint32(data))
-	r.docSizeStack = append(r.docSizeStack, size)
-	r.onElement = true
+	r.state.docSize = int(binary.LittleEndian.Uint32(data))
+	r.state.onElement = true
 	return r, nil
 }
 
 func (r *reader) ReadElement() (string, ValueReader, error) {
-	if !r.onElement {
+	if !r.state.onElement {
 		return "", nil, r.wrapError(errNotElement)
 	}
 
@@ -179,16 +213,13 @@ func (r *reader) ReadElement() (string, ValueReader, error) {
 	}
 
 	if t == 0 {
-		r.currentDepth--
-		startPosition := r.docStartPositionStack[r.currentDepth]
-		size := r.docSizeStack[r.currentDepth]
-		if r.pos-startPosition != size {
+		if r.pos-r.state.docStartPos != r.state.docSize {
 			// TODO: use start position for this error report
 			return "", nil, r.wrapError(errInvalidDocumentLength)
 		}
 
-		r.docStartPositionStack = r.docStartPositionStack[:r.currentDepth]
-		r.docSizeStack = r.docSizeStack[:r.currentDepth]
+		r.state.pop()
+		r.state.onElement = true
 		return "", nil, EOD
 	}
 
@@ -197,8 +228,8 @@ func (r *reader) ReadElement() (string, ValueReader, error) {
 		return "", nil, r.wrapError(err)
 	}
 
-	r.onElement = false
-	r.valueType = Type(t)
+	r.state.onElement = false
+	r.state.valueType = Type(t)
 	if err = r.setValueSize(); err != nil {
 		return "", nil, err
 	}
@@ -215,7 +246,7 @@ func (r *reader) ReadInt32() (int32, error) {
 		return 0, r.wrapError(err)
 	}
 
-	r.onElement = true
+	r.state.onElement = true
 	return int32(binary.LittleEndian.Uint32(data)), nil
 }
 
@@ -229,7 +260,7 @@ func (r *reader) ReadInt64() (int64, error) {
 		return 0, r.wrapError(err)
 	}
 
-	r.onElement = true
+	r.state.onElement = true
 	return int64(binary.LittleEndian.Uint64(data)), nil
 }
 
@@ -238,33 +269,33 @@ func (r *reader) ReadString() (string, error) {
 		return "", r.wrapError(err)
 	}
 
-	data, err := r.readBytes(r.valueSize)
+	data, err := r.readBytes(r.state.valueSize)
 	if err != nil {
 		return "", r.wrapError(err)
 	}
 
-	if data[r.valueSize-1] != 0 {
+	if data[r.state.valueSize-1] != 0 {
 		return "", r.wrapError(fmt.Errorf("string not terminated by NUL"))
 	}
 
-	r.onElement = true
+	r.state.onElement = true
 	return string(data[4 : len(data)-1]), nil
 }
 
 func (r *reader) Size() int {
-	return r.valueSize
+	return r.state.valueSize
 }
 
 func (r *reader) Skip() error {
-	if r.onElement {
+	if r.state.onElement {
 		return r.wrapError(errNotValue)
 	}
 
-	return r.skip(r.valueSize)
+	return r.skip(r.state.valueSize)
 }
 
 func (r *reader) Type() Type {
-	return r.valueType
+	return r.state.valueType
 }
 
 func (r *reader) wrapError(err error) error {
