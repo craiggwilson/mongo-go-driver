@@ -31,28 +31,23 @@ func (raw Raw) Unmarshal(v interface{}) error {
 		return err
 	}
 
-	_, err = codec.Decode(raw.reg, vr, v)
-	return err
+	return codec.Decode(raw.reg, vr, v)
 }
 
 type RawDCodec struct{}
 
-func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (interface{}, error) {
+func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
 	var target *RawD
 	var ok bool
-	if v != nil {
-		if target, ok = v.(*RawD); !ok {
-			return nil, fmt.Errorf("%T can only be used to decode *bson2.RawD", c)
-		}
-	} else {
-		target = &RawD{}
+	if target, ok = v.(*RawD); !ok {
+		return fmt.Errorf("%T can only be used to decode *bson2.RawD", c)
 	}
 
 	elems := []RawDocElem(*target)
 
 	doc, err := vr.ReadDocument()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for {
@@ -61,7 +56,7 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (i
 			break
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		kind := byte(evr.Type())
@@ -69,32 +64,28 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (i
 		bytes := make([]byte, evr.Size())
 		err = evr.ReadBytes(bytes)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		elems = append(elems, RawDocElem{Name: name, Value: Raw{Kind: kind, Data: bytes, reg: reg}})
 	}
 
 	*target = RawD(elems)
-	return target, nil
+	return nil
 }
 
 type RawCodec struct{}
 
-func (c *RawCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (interface{}, error) {
+func (c *RawCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
 	var target *Raw
 	var ok bool
-	if v != nil {
-		if target, ok = v.(*Raw); !ok {
-			return nil, fmt.Errorf("%T can only be used to decode *bson2.Raw", c)
-		}
-	} else {
-		target = &Raw{}
+	if target, ok = v.(*Raw); !ok {
+		return fmt.Errorf("%T can only be used to decode *bson2.Raw", c)
 	}
 
 	target.Kind = byte(vr.Type())
 	target.Data = make([]byte, vr.Size())
 	vr.ReadBytes(target.Data)
 	target.reg = reg
-	return target, nil
+	return nil
 }

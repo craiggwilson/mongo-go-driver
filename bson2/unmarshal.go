@@ -21,6 +21,5 @@ func UnmarshalRegistry(input []byte, v interface{}, reg *CodecRegistry) error {
 		return err
 	}
 
-	_, err = codec.Decode(reg, vr, v)
-	return err
+	return codec.Decode(reg, vr, v)
 }

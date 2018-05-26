@@ -6,22 +6,18 @@ type M map[string]interface{}
 
 type MCodec struct{}
 
-func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (interface{}, error) {
+func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
 	var target *M
 	var ok bool
-	if v != nil {
-		if target, ok = v.(*M); !ok {
-			return nil, fmt.Errorf("%T can only be used to decode *bson2.M", c)
-		}
-	} else {
-		target = &M{}
+	if target, ok = v.(*M); !ok {
+		return fmt.Errorf("%T can only be used to decode *bson2.M", c)
 	}
 
 	m := map[string]interface{}(*target)
 
 	doc, err := vr.ReadDocument()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for {
@@ -30,19 +26,19 @@ func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) (inte
 			break
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		value, err := c.decodeValue(reg, evr)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		m[name] = value
 	}
 
 	*target = m
-	return target, nil
+	return nil
 }
 
 func (c *MCodec) decodeValue(reg *CodecRegistry, vr ValueReader) (interface{}, error) {
@@ -50,12 +46,12 @@ func (c *MCodec) decodeValue(reg *CodecRegistry, vr ValueReader) (interface{}, e
 	case TypeBoolean:
 		return vr.ReadBoolean()
 	case TypeDocument:
-		value, err := c.Decode(reg, vr, nil)
-		if err != nil {
+		value := M{}
+		if err := c.Decode(reg, vr, &value); err != nil {
 			return nil, err
 		}
 
-		return *value.(*M), nil
+		return value, nil
 	case TypeInt32:
 		return vr.ReadInt32()
 	case TypeInt64:
