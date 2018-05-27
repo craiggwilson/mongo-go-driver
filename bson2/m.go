@@ -1,6 +1,8 @@
 package bson2
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type M map[string]interface{}
 
@@ -21,7 +23,7 @@ func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error
 	}
 
 	for {
-		name, evr, err := doc.ReadElement()
+		name, vr, err := doc.ReadElement()
 		if err == EOD {
 			break
 		}
@@ -29,7 +31,9 @@ func (c *MCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error
 			return err
 		}
 
-		value, err := c.decodeValue(reg, evr)
+		// NOTE: we could call decodeIface here and share some code, but it seems that it has a
+		// significant impact on performance, presumably due to it's use of reflection, so...
+		value, err := c.decodeValue(reg, vr)
 		if err != nil {
 			return err
 		}

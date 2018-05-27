@@ -163,10 +163,10 @@ func BenchmarkReadLargeFlat_Mgo_RawD(b *testing.B)       { benchmarkReadMgoRawD(
 
 func BenchmarkReadLargeDeep_Bson_Document(b *testing.B)  { benchmarkReadBsonDocument(largeDeep, b) }
 func BenchmarkReadLargeDeep_Bson2_Document(b *testing.B) { benchmarkReadBson2Document(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson_2D(b *testing.B)        { benchmarkReadBson2D(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson_2M(b *testing.B)        { benchmarkBson2M(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson_2RawD(b *testing.B)     { benchmarkReadBson2RawD(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson_2Raw(b *testing.B)      { benchmarkBson2Raw(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_D(b *testing.B)        { benchmarkReadBson2D(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_M(b *testing.B)        { benchmarkBson2M(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_RawD(b *testing.B)     { benchmarkReadBson2RawD(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_Raw(b *testing.B)      { benchmarkBson2Raw(largeDeep, b) }
 func BenchmarkReadLargeDeep_Mgo_D(b *testing.B)          { benchmarkReadMgoD(largeDeep, b) }
 func BenchmarkReadLargeDeep_Mgo_M(b *testing.B)          { benchmarkReadMgoM(largeDeep, b) }
 func BenchmarkReadLargeDeep_Mgo_RawD(b *testing.B)       { benchmarkReadMgoRawD(largeDeep, b) }

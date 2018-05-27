@@ -22,20 +22,26 @@ func NewCodecRegistry() *CodecRegistry {
 type CodecRegistry struct {
 	codecs map[reflect.Type]Codec
 
+	mapCodec    MapCodec
 	structCodec StructCodec
 }
 
 func (cr *CodecRegistry) Lookup(t reflect.Type) (Codec, bool) {
 	codec, ok := cr.codecs[t]
-	if !ok {
-		// 1) check to see if this type implements Unmarshaler. If so, invoke that method.
-		// TODO
-		// 2) fallback to generic struct decoder
-		if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct {
-			return &cr.structCodec, true
-		}
+	if ok {
+		return codec, true
 	}
-	return codec, ok
+
+	// 1) See if it's a map type
+	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Map {
+		return &cr.mapCodec, true
+	}
+
+	// 2) fallback to generic struct decoder
+	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct {
+		return &cr.structCodec, true
+	}
+	return nil, false
 }
 
 func (cr *CodecRegistry) Register(t reflect.Type, codec Codec) {

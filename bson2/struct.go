@@ -8,17 +8,15 @@ import (
 
 type StructCodec struct{}
 
-var zeroVal reflect.Value
-
 func (c *StructCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
-	valuePtr := reflect.ValueOf(v)
-	if valuePtr.Kind() != reflect.Ptr {
+	sPtr := reflect.ValueOf(v)
+	if sPtr.Kind() != reflect.Ptr {
 		return fmt.Errorf("%T can only process pointers to structs, but got a %T", c, v)
 	}
 
-	value := valuePtr.Elem()
+	s := sPtr.Elem()
 
-	valueType := value.Type()
+	sType := s.Type()
 
 	dr, err := vr.ReadDocument()
 	if err != nil {
@@ -33,11 +31,11 @@ func (c *StructCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) 
 			return err
 		}
 
-		field := value.FieldByNameFunc(func(field string) bool {
-			return c.matchesField(name, field, valueType)
+		field := s.FieldByNameFunc(func(field string) bool {
+			return c.matchesField(name, field, sType)
 		})
 		if field == zeroVal {
-			// TODO: the default should not be ignore, although that is currently how mgo works.
+			// TODO: the default should not be ignore although that is currently how mgo works.
 			// We should return an error unless they have:
 			// 1) specified to ignore extra elements
 			// 2) included an extra elements field (map[string]interface{}, bson.D, bson.Document, etc...)
@@ -60,7 +58,7 @@ func (c *StructCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) 
 		fieldPtrType := fieldPtr.Type()
 		fieldPtrCodec, ok := reg.Lookup(fieldPtrType)
 		if !ok {
-			return fmt.Errorf("unable to find codec for type %v for field '%s'", name, fieldPtrType)
+			return fmt.Errorf("unable to find codec for type %v for field '%s'", fieldPtrType, name)
 		}
 
 		if err = fieldPtrCodec.Decode(reg, vr, fieldPtr.Interface()); err != nil {

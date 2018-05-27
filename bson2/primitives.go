@@ -1,6 +1,8 @@
 package bson2
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type StringCodec struct{}
 
