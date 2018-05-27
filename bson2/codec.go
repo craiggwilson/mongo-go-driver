@@ -33,7 +33,7 @@ func (cr *CodecRegistry) Lookup(t reflect.Type) (Codec, bool) {
 		return codec, true
 	}
 
-	// 1) See if it's a map type
+	// 1) See if it's a generic map type
 	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Map {
 		return &cr.mapCodec, true
 	}
