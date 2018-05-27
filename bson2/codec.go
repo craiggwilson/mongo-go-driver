@@ -6,12 +6,13 @@ var globalRegistry = NewCodecRegistry()
 
 func NewCodecRegistry() *CodecRegistry {
 	codecs := map[reflect.Type]Codec{
-		reflect.TypeOf(&Document{}): &DocumentCodec{},
-		reflect.TypeOf(&D{}):        &DCodec{},
-		reflect.TypeOf(&M{}):        &MCodec{},
-		reflect.TypeOf(&RawD{}):     &RawDCodec{},
-		reflect.TypeOf(&Raw{}):      &RawCodec{},
-		reflect.TypeOf(new(string)): &StringCodec{},
+		reflect.TypeOf(new(Document)): &DocumentCodec{},
+		reflect.TypeOf(new(D)):        &DCodec{},
+		reflect.TypeOf(new(M)):        &MCodec{},
+		reflect.TypeOf(new(RawD)):     &RawDCodec{},
+		reflect.TypeOf(new(Raw)):      &RawCodec{},
+		reflect.TypeOf(new(int32)):    &Int32Codec{},
+		reflect.TypeOf(new(string)):   &StringCodec{},
 	}
 
 	return &CodecRegistry{
