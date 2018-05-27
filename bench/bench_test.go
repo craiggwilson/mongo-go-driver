@@ -9,81 +9,105 @@ import (
 	mgo "gopkg.in/mgo.v2/bson"
 )
 
+var benchError error
+
 func benchmarkReadBsonDocument(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := bson.NewDocument()
-		bson.Unmarshal(input, target)
+		err = bson.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadBsonStruct(input []byte, t reflect.Type, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := reflect.New(t).Interface()
-		bson.Unmarshal(input, target)
+		err = bson.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadBson2Document(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.Document{}
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadBson2Struct(input []byte, t reflect.Type, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := reflect.New(t).Interface()
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadBson2D(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.D{}
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkBson2M(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.M{}
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadBson2RawD(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.RawD{}
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkBson2Raw(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.Raw{}
-		bson2.Unmarshal(input, target)
+		err = bson2.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadMgoD(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.D{}
-		mgo.Unmarshal(input, target)
+		err = mgo.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadMgoM(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.M{}
-		mgo.Unmarshal(input, target)
+		err = mgo.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func benchmarkReadMgoRawD(input []byte, b *testing.B) {
+	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.RawD{}
-		mgo.Unmarshal(input, target)
+		err = mgo.Unmarshal(input, target)
 	}
+	benchError = err
 }
 
 func BenchmarkWarmup(b *testing.B) {
