@@ -13,6 +13,15 @@ var small, _ = bson.NewDocument(
 	),
 ).MarshalBSON()
 
+type smallStruct struct {
+	A int32
+	X *smallStructX
+}
+
+type smallStructX struct {
+	A string
+}
+
 var small2, _ = bson.NewDocument(
 	bson.EC.SubDocumentFromElements("driver",
 		bson.EC.String("name", "mongo-go-driver"),
@@ -24,6 +33,18 @@ var small2, _ = bson.NewDocument(
 	),
 	bson.EC.String("platform", "go1.9.2"),
 ).MarshalBSON()
+
+type small2Struct struct {
+	Platform string
+	Driver   struct {
+		Name    string
+		Version string
+	}
+	Os struct {
+		Type         string
+		Architecture string
+	}
+}
 
 var largeFlat, _ = buildLargeFlatDocument().MarshalBSON()
 
@@ -55,10 +76,10 @@ func buildLargeDeepDocument() *bson.Document {
 }
 
 // func TestPrint(t *testing.T) {
-// 	target := &bson2.D{}
-// 	bson2.Unmarshal(largeDeep, target)
+// 	target := &small2Struct{}
+// 	bson2.Unmarshal(small2, target)
 
-// 	fmt.Printf("%# v", target)
+// 	fmt.Printf("%#v", target)
 // 	t.Fail()
 // }
 

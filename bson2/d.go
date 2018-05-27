@@ -20,13 +20,13 @@ func (c *DCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error
 
 	elems := []DocElem(*target)
 
-	doc, err := vr.ReadDocument()
+	dr, err := vr.ReadDocument()
 	if err != nil {
 		return err
 	}
 
 	for {
-		name, evr, err := doc.ReadElement()
+		name, evr, err := dr.ReadElement()
 		if err == EOD {
 			break
 		}
