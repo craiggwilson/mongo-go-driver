@@ -99,3 +99,7 @@ func (c *DocumentCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}
 
 	return nil
 }
+
+func (c *DocumentCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
+}

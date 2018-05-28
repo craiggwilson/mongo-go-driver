@@ -70,3 +70,7 @@ func (c *MapCodec) decodeValue(reg *CodecRegistry, vr ValueReader, valueType ref
 		return zeroVal, fmt.Errorf("unsupported AHAHAHAHA")
 	}
 }
+
+func (c *MapCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
+}

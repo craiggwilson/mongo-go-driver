@@ -28,18 +28,22 @@ type CodecRegistry struct {
 }
 
 func (cr *CodecRegistry) Lookup(t reflect.Type) (Codec, bool) {
+	if t.Kind() != reflect.Ptr {
+		t = reflect.PtrTo(t)
+	}
+
 	codec, ok := cr.codecs[t]
 	if ok {
 		return codec, true
 	}
 
 	// 1) See if it's a generic map type
-	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Map {
+	if t.Elem().Kind() == reflect.Map {
 		return &cr.mapCodec, true
 	}
 
 	// 2) fallback to generic struct decoder
-	if t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct {
+	if t.Elem().Kind() == reflect.Struct {
 		return &cr.structCodec, true
 	}
 	return nil, false
@@ -51,8 +55,13 @@ func (cr *CodecRegistry) Register(t reflect.Type, codec Codec) {
 
 type Codec interface {
 	Decoder
+	Encoder
 }
 
 type Decoder interface {
 	Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error
+}
+
+type Encoder interface {
+	Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error
 }

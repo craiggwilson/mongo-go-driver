@@ -66,3 +66,7 @@ func (c *MCodec) decodeValue(reg *CodecRegistry, vr ValueReader) (interface{}, e
 		return nil, fmt.Errorf("unsuppored bson type")
 	}
 }
+
+func (c *MCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
+}

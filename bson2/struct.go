@@ -95,3 +95,7 @@ func (c *StructCodec) matchesField(key string, field string, sType reflect.Type)
 
 	return fieldKey == key
 }
+
+func (c *StructCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
+}

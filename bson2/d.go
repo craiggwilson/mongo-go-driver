@@ -1,6 +1,9 @@
 package bson2
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type D []DocElem
 
@@ -44,6 +47,40 @@ func (c *DCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error
 
 	*target = D(elems)
 	return nil
+}
+
+func (c *DCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	var value D
+	if valuePtr, ok := v.(*D); ok {
+		value = *valuePtr
+	} else if value, ok = v.(D); !ok {
+		return fmt.Errorf("%T can only be used to encode bson2.D or *bson.D", c)
+	}
+
+	elems := []DocElem(value)
+
+	dw, err := vw.WriteDocument()
+	if err != nil {
+		return err
+	}
+
+	for _, elem := range elems {
+		vw, err := dw.WriteElement(elem.Name)
+		if err != nil {
+			return err
+		}
+
+		codec, ok := reg.Lookup(reflect.TypeOf(elem.Value))
+		if !ok {
+			return fmt.Errorf("could not find codec for %T", elem.Value)
+		}
+
+		if err = codec.Encode(reg, vw, elem.Value); err != nil {
+			return err
+		}
+	}
+
+	return dw.WriteEndDocument()
 }
 
 func (c *DCodec) decodeValue(reg *CodecRegistry, vr ValueReader) (interface{}, error) {

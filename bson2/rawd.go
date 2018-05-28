@@ -74,6 +74,10 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) er
 	return nil
 }
 
+func (c *RawDCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
+}
+
 type RawCodec struct{}
 
 func (c *RawCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
@@ -88,4 +92,8 @@ func (c *RawCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) err
 	vr.ReadBytes(target.Data)
 	target.reg = reg
 	return nil
+}
+
+func (c *RawCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	return fmt.Errorf("not supported")
 }

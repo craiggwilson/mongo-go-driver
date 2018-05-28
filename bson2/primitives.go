@@ -36,6 +36,17 @@ func (c *Int32Codec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) e
 	}
 }
 
+func (c *Int32Codec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	var value int32
+	if valuePtr, ok := v.(*int32); ok {
+		value = *valuePtr
+	} else if value, ok = v.(int32); !ok {
+		return fmt.Errorf("%T can only be used to encode int32 or *int32", c)
+	}
+
+	return vw.WriteInt32(value)
+}
+
 type StringCodec struct{}
 
 func (c *StringCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) error {
@@ -53,4 +64,15 @@ func (c *StringCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) 
 	default:
 		return fmt.Errorf("cannot decode %v into a string", vr.Type())
 	}
+}
+
+func (c *StringCodec) Encode(reg *CodecRegistry, vw ValueWriter, v interface{}) error {
+	var value string
+	if valuePtr, ok := v.(*string); ok {
+		value = *valuePtr
+	} else if value, ok = v.(string); !ok {
+		return fmt.Errorf("%T can only be used to encode string or *string", c)
+	}
+
+	return vw.WriteString(value)
 }
