@@ -1,27 +1,28 @@
 package bson2
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"reflect"
 )
 
-func Marshal(v interface{}, out io.Writer) error {
-	return MarshalRegistry(v, out, globalRegistry)
+func Marshal(v interface{}) ([]byte, error) {
+	return MarshalRegistry(v, globalRegistry)
 }
 
-func MarshalRegistry(v interface{}, out io.Writer, reg *CodecRegistry) error {
+func MarshalRegistry(v interface{}, reg *CodecRegistry) ([]byte, error) {
 	t := reflect.TypeOf(v)
 	codec, ok := reg.Lookup(t)
 	if !ok {
-		return fmt.Errorf("could not find codec for type %v", t)
+		return nil, fmt.Errorf("could not find codec for type %v", t)
 	}
 
 	vw := NewValueWriter()
 	if err := codec.Encode(reg, vw, v); err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err := vw.WriteTo(out)
-	return err
+	var buffer bytes.Buffer
+	_, err := vw.WriteTo(&buffer)
+	return buffer.Bytes(), err
 }

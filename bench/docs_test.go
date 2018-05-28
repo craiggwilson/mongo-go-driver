@@ -6,6 +6,8 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
+var benchError error
+
 var small, _ = bson.NewDocument(
 	bson.EC.Int32("a", 1),
 	bson.EC.SubDocumentFromElements("x",

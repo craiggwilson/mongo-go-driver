@@ -9,8 +9,6 @@ import (
 	mgo "gopkg.in/mgo.v2/bson"
 )
 
-var benchError error
-
 func benchmarkReadBsonDocument(input []byte, b *testing.B) {
 	var err error
 	for i := 0; i < b.N; i++ {
