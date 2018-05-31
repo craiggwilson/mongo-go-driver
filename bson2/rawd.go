@@ -61,6 +61,7 @@ func (c *RawDCodec) Decode(reg *CodecRegistry, vr ValueReader, v interface{}) er
 
 		kind := byte(evr.Type())
 
+		//bytes := evr.ReadSlice()
 		bytes := make([]byte, evr.Size())
 		err = evr.ReadBytes(bytes)
 		if err != nil {

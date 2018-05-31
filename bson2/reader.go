@@ -15,6 +15,7 @@ type DocumentReader interface {
 type ValueReader interface {
 	// ReadBytes gets the bytes representing the value.
 	ReadBytes([]byte) error
+	ReadSlice() ([]byte, error)
 	Size() int
 	Type() Type
 
@@ -181,6 +182,19 @@ func (r *reader) ReadBytes(buf []byte) error {
 	}
 	copy(buf, data)
 	return nil
+}
+
+func (r *reader) ReadSlice() ([]byte, error) {
+	if r.state.onElement {
+		return nil, r.wrapError(errNotValue)
+	}
+
+	r.state.onElement = true
+	data, err := r.readBytes(r.state.valueSize)
+	if err != nil {
+		return nil, r.wrapError(err)
+	}
+	return data, nil
 }
 
 func (r *reader) ReadDocument() (DocumentReader, error) {
