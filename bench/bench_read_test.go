@@ -108,6 +108,15 @@ func benchmarkReadMgoRawD(input []byte, b *testing.B) {
 	benchError = err
 }
 
+func benchmarkReadMgoStruct(input []byte, t reflect.Type, b *testing.B) {
+	var err error
+	for i := 0; i < b.N; i++ {
+		target := reflect.New(t).Interface()
+		err = mgo.Unmarshal(input, target)
+	}
+	benchError = err
+}
+
 func BenchmarkWarmup(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = small
@@ -132,6 +141,9 @@ func BenchmarkReadSmall_Bson2_Raw(b *testing.B)  { benchmarkBson2Raw(small, b) }
 func BenchmarkReadSmall_Mgo_D(b *testing.B)      { benchmarkReadMgoD(small, b) }
 func BenchmarkReadSmall_Mgo_M(b *testing.B)      { benchmarkReadMgoM(small, b) }
 func BenchmarkReadSmall_Mgo_RawD(b *testing.B)   { benchmarkReadMgoRawD(small, b) }
+func BenchmarkReadSmall_Mgo_Struct(b *testing.B) {
+	benchmarkReadMgoStruct(small, reflect.TypeOf(new(smallStruct)), b)
+}
 
 func BenchmarkReadSmall2_Bson_Document(b *testing.B) { benchmarkReadBsonDocument(small2, b) }
 func BenchmarkReadSmall2_Bson_Struct(b *testing.B) {
@@ -148,6 +160,9 @@ func BenchmarkReadSmall2_Bson2_Raw(b *testing.B)  { benchmarkBson2Raw(small2, b)
 func BenchmarkReadSmall2_Mgo_D(b *testing.B)      { benchmarkReadMgoD(small2, b) }
 func BenchmarkReadSmall2_Mgo_M(b *testing.B)      { benchmarkReadMgoM(small2, b) }
 func BenchmarkReadSmall2_Mgo_RawD(b *testing.B)   { benchmarkReadMgoRawD(small2, b) }
+func BenchmarkReadSmall2_Mgo_Struct(b *testing.B) {
+	benchmarkReadMgoStruct(small, reflect.TypeOf(new(small2Struct)), b)
+}
 
 func BenchmarkReadLargeFlat_Bson_Document(b *testing.B)  { benchmarkReadBsonDocument(largeFlat, b) }
 func BenchmarkReadLargeFlat_Bson2_Document(b *testing.B) { benchmarkReadBson2Document(largeFlat, b) }
