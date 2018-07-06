@@ -164,22 +164,40 @@ func BenchmarkReadSmall2_Mgo_Struct(b *testing.B) {
 	benchmarkReadMgoStruct(small, reflect.TypeOf(new(small2Struct)), b)
 }
 
-func BenchmarkReadLargeFlat_Bson_Document(b *testing.B)  { benchmarkReadBsonDocument(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson_Document(b *testing.B) { benchmarkReadBsonDocument(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson_Struct(b *testing.B) {
+	benchmarkReadBsonStruct(largeFlat, reflect.TypeOf(new(largeFlatStruct)), b)
+}
 func BenchmarkReadLargeFlat_Bson2_Document(b *testing.B) { benchmarkReadBson2Document(largeFlat, b) }
-func BenchmarkReadLargeFlat_Bson2_D(b *testing.B)        { benchmarkReadBson2D(largeFlat, b) }
-func BenchmarkReadLargeFlat_Bson2_M(b *testing.B)        { benchmarkBson2M(largeFlat, b) }
-func BenchmarkReadLargeFlat_Bson2_RawD(b *testing.B)     { benchmarkReadBson2RawD(largeFlat, b) }
-func BenchmarkReadLargeFlat_Bson2_Raw(b *testing.B)      { benchmarkBson2Raw(largeFlat, b) }
-func BenchmarkReadLargeFlat_Mgo_D(b *testing.B)          { benchmarkReadMgoD(largeFlat, b) }
-func BenchmarkReadLargeFlat_Mgo_M(b *testing.B)          { benchmarkReadMgoM(largeFlat, b) }
-func BenchmarkReadLargeFlat_Mgo_RawD(b *testing.B)       { benchmarkReadMgoRawD(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson2_Struct(b *testing.B) {
+	benchmarkReadBson2Struct(largeFlat, reflect.TypeOf(new(largeFlatStruct)), b)
+}
+func BenchmarkReadLargeFlat_Bson2_D(b *testing.B)    { benchmarkReadBson2D(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson2_M(b *testing.B)    { benchmarkBson2M(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson2_RawD(b *testing.B) { benchmarkReadBson2RawD(largeFlat, b) }
+func BenchmarkReadLargeFlat_Bson2_Raw(b *testing.B)  { benchmarkBson2Raw(largeFlat, b) }
+func BenchmarkReadLargeFlat_Mgo_D(b *testing.B)      { benchmarkReadMgoD(largeFlat, b) }
+func BenchmarkReadLargeFlat_Mgo_M(b *testing.B)      { benchmarkReadMgoM(largeFlat, b) }
+func BenchmarkReadLargeFlat_Mgo_RawD(b *testing.B)   { benchmarkReadMgoRawD(largeFlat, b) }
+func BenchmarkReadLargeFlat_Mgo_Struct(b *testing.B) {
+	benchmarkReadMgoStruct(largeFlat, reflect.TypeOf(new(largeFlatStruct)), b)
+}
 
-func BenchmarkReadLargeDeep_Bson_Document(b *testing.B)  { benchmarkReadBsonDocument(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson_Document(b *testing.B) { benchmarkReadBsonDocument(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson_Struct(b *testing.B) {
+	benchmarkReadBsonStruct(largeDeep, reflect.TypeOf(new(largeDeepStruct)), b)
+}
 func BenchmarkReadLargeDeep_Bson2_Document(b *testing.B) { benchmarkReadBson2Document(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson2_D(b *testing.B)        { benchmarkReadBson2D(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson2_M(b *testing.B)        { benchmarkBson2M(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson2_RawD(b *testing.B)     { benchmarkReadBson2RawD(largeDeep, b) }
-func BenchmarkReadLargeDeep_Bson2_Raw(b *testing.B)      { benchmarkBson2Raw(largeDeep, b) }
-func BenchmarkReadLargeDeep_Mgo_D(b *testing.B)          { benchmarkReadMgoD(largeDeep, b) }
-func BenchmarkReadLargeDeep_Mgo_M(b *testing.B)          { benchmarkReadMgoM(largeDeep, b) }
-func BenchmarkReadLargeDeep_Mgo_RawD(b *testing.B)       { benchmarkReadMgoRawD(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_Struct(b *testing.B) {
+	benchmarkReadBson2Struct(largeDeep, reflect.TypeOf(new(largeDeepStruct)), b)
+}
+func BenchmarkReadLargeDeep_Bson2_D(b *testing.B)    { benchmarkReadBson2D(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_M(b *testing.B)    { benchmarkBson2M(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_RawD(b *testing.B) { benchmarkReadBson2RawD(largeDeep, b) }
+func BenchmarkReadLargeDeep_Bson2_Raw(b *testing.B)  { benchmarkBson2Raw(largeDeep, b) }
+func BenchmarkReadLargeDeep_Mgo_D(b *testing.B)      { benchmarkReadMgoD(largeDeep, b) }
+func BenchmarkReadLargeDeep_Mgo_M(b *testing.B)      { benchmarkReadMgoM(largeDeep, b) }
+func BenchmarkReadLargeDeep_Mgo_RawD(b *testing.B)   { benchmarkReadMgoRawD(largeDeep, b) }
+func BenchmarkReadLargeDeep_Mgo_Struct(b *testing.B) {
+	benchmarkReadMgoStruct(largeDeep, reflect.TypeOf(new(largeDeepStruct)), b)
+}
