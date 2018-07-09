@@ -9,111 +9,149 @@ import (
 	mgo "gopkg.in/mgo.v2/bson"
 )
 
+var readResult interface{}
+
 func benchmarkReadBsonDocument(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := bson.NewDocument()
 		err = bson.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadBsonStruct(input []byte, t reflect.Type, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := reflect.New(t).Interface()
 		err = bson.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadBson2Document(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.Document{}
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadBson2Struct(input []byte, t reflect.Type, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := reflect.New(t).Interface()
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadBson2D(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.D{}
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkBson2M(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.M{}
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadBson2RawD(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.RawD{}
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkBson2Raw(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &bson2.Raw{}
 		err = bson2.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadMgoD(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.D{}
 		err = mgo.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadMgoM(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.M{}
 		err = mgo.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadMgoRawD(input []byte, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := &mgo.RawD{}
 		err = mgo.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
 func benchmarkReadMgoStruct(input []byte, t reflect.Type, b *testing.B) {
+	var result interface{}
 	var err error
 	for i := 0; i < b.N; i++ {
 		target := reflect.New(t).Interface()
 		err = mgo.Unmarshal(input, target)
+		result = target
 	}
+	readResult = result
 	benchError = err
 }
 
