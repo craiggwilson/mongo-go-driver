@@ -15,3 +15,13 @@ type Val2 interface {
 
 	MarshalBSONValue() (bsontype.Type, []byte, error)
 }
+
+type Int32Value int32
+
+func (Int32Value) Type() bsontype.Type {
+	return bsontype.Int32
+}
+
+func (i32 Int32Value) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bsontype.Int32, []byte{0,0,0,0}, nil
+}

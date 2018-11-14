@@ -44,7 +44,7 @@ func buildWideDoc() bson.Doc {
 func buildWideDoc2() bson.Doc2 {
 	d := bson.Doc2{}
 	for i := 0; i < 100; i++ {
-		d = append(d, bson.Elem2{strconv.Itoa(i), bson.Int32(int32(i))})
+		d = append(d, bson.Elem2{strconv.Itoa(i), bson.Int32Value(int32(i))})
 	}
 	return d
 }
