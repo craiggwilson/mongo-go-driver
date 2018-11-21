@@ -50,8 +50,10 @@ var tUint32 = reflect.TypeOf(uint32(0))
 var tUint64 = reflect.TypeOf(uint64(0))
 
 var tEmpty = reflect.TypeOf((*interface{})(nil)).Elem()
+var tEmptySlice = reflect.TypeOf([]interface{}(nil))
 var tByteSlice = reflect.TypeOf([]byte(nil))
 var tByte = reflect.TypeOf(byte(0x00))
+var tMap = reflect.TypeOf(map[string]interface{}(nil))
 var tURL = reflect.TypeOf(url.URL{})
 var tJSONNumber = reflect.TypeOf(json.Number(""))
 

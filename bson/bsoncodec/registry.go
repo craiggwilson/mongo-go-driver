@@ -10,6 +10,8 @@ import (
 	"errors"
 	"reflect"
 	"sync"
+
+	"github.com/mongodb/mongo-go-driver/bson/bsontype"
 )
 
 // ErrNilType is returned when nil is passed to either LookupEncoder or LookupDecoder.
@@ -52,6 +54,8 @@ type RegistryBuilder struct {
 	typeDecoders      map[reflect.Type]ValueDecoder
 	interfaceDecoders []interfaceValueDecoder
 	kindDecoders      map[reflect.Kind]ValueDecoder
+
+	bsonTypeMap map[bsontype.Type]reflect.Type
 }
 
 // A Registry is used to store and retrieve codecs for types and interfaces. This type is the main
@@ -65,6 +69,8 @@ type Registry struct {
 
 	kindEncoders map[reflect.Kind]ValueEncoder
 	kindDecoders map[reflect.Kind]ValueDecoder
+
+	bsonTypeDecoders map[bsontype.Type]ValueDecoder
 
 	mu sync.RWMutex
 }
@@ -80,6 +86,8 @@ func NewRegistryBuilder() *RegistryBuilder {
 
 		kindEncoders: make(map[reflect.Kind]ValueEncoder),
 		kindDecoders: make(map[reflect.Kind]ValueDecoder),
+
+		bsonTypeMap: make(map[bsontype.Type]reflect.Type),
 	}
 }
 
@@ -153,6 +161,13 @@ func (rb *RegistryBuilder) RegisterDefaultDecoder(kind reflect.Kind, dec ValueDe
 	return rb
 }
 
+// SetBsonTypeDecodeType will use the specified reflect type upon encountering the specified bsontype
+// when decoding into an empty interface.
+func (rb *RegistryBuilder) SetBsonTypeDecodeType(bt bsontype.Type, rt reflect.Type) *RegistryBuilder {
+	rb.bsonTypeMap[bt] = rt
+	return rb
+}
+
 // Build creates a Registry from the current state of this RegistryBuilder.
 func (rb *RegistryBuilder) Build() *Registry {
 	registry := new(Registry)
@@ -181,6 +196,11 @@ func (rb *RegistryBuilder) Build() *Registry {
 	registry.kindDecoders = make(map[reflect.Kind]ValueDecoder)
 	for kind, dec := range rb.kindDecoders {
 		registry.kindDecoders[kind] = dec
+	}
+
+	registry.bsonTypeDecoders = make(map[bsontype.Type]ValueDecoder)
+	for bt, rt := range rb.bsonTypeMap {
+		registry.bsonTypeDecoders[bt], _ = registry.LookupDecoder(rt)
 	}
 
 	return registry
@@ -336,6 +356,12 @@ func (r *Registry) lookupInterfaceDecoder(t reflect.Type) (ValueDecoder, bool) {
 		return idec.vd, true
 	}
 	return nil, false
+}
+
+// LookupBsonTypeDecoder will return the decoder to use for specified bsontype when
+// the decode target is the empty interface.
+func (r *Registry) LookupBsonTypeDecoder(t bsontype.Type) ValueDecoder {
+	return r.bsonTypeDecoders[t]
 }
 
 type interfaceValueEncoder struct {

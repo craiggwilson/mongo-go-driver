@@ -65,7 +65,28 @@ func (dvd DefaultValueDecoders) RegisterDefaultDecoders(rb *RegistryBuilder) {
 		RegisterDefaultDecoder(reflect.Map, ValueDecoderFunc(dvd.MapDecodeValue)).
 		RegisterDefaultDecoder(reflect.Slice, ValueDecoderFunc(dvd.SliceDecodeValue)).
 		RegisterDefaultDecoder(reflect.String, ValueDecoderFunc(dvd.StringDecodeValue)).
-		RegisterDefaultDecoder(reflect.Struct, &StructCodec{cache: make(map[reflect.Type]*structDescription), parser: DefaultStructTagParser})
+		RegisterDefaultDecoder(reflect.Struct, &StructCodec{cache: make(map[reflect.Type]*structDescription), parser: DefaultStructTagParser}).
+		SetBsonTypeDecodeType(bsontype.Double, tFloat64).
+		SetBsonTypeDecodeType(bsontype.String, tString).
+		SetBsonTypeDecodeType(bsontype.EmbeddedDocument, tMap).
+		SetBsonTypeDecodeType(bsontype.Array, tEmptySlice).
+		SetBsonTypeDecodeType(bsontype.Binary, tByteSlice).
+		SetBsonTypeDecodeType(bsontype.Undefined, nil).
+		SetBsonTypeDecodeType(bsontype.ObjectID, tOID).
+		SetBsonTypeDecodeType(bsontype.Boolean, tBool).
+		SetBsonTypeDecodeType(bsontype.DateTime, tTime).
+		SetBsonTypeDecodeType(bsontype.Null, nil).
+		SetBsonTypeDecodeType(bsontype.Regex, nil).
+		SetBsonTypeDecodeType(bsontype.DBPointer, nil).
+		SetBsonTypeDecodeType(bsontype.JavaScript, nil).
+		SetBsonTypeDecodeType(bsontype.Symbol, nil).
+		SetBsonTypeDecodeType(bsontype.CodeWithScope, nil).
+		SetBsonTypeDecodeType(bsontype.Int32, tInt32).
+		SetBsonTypeDecodeType(bsontype.Timestamp, tTime).
+		SetBsonTypeDecodeType(bsontype.Int64, tInt64).
+		SetBsonTypeDecodeType(bsontype.Decimal128, nil).
+		SetBsonTypeDecodeType(bsontype.MinKey, nil).
+		SetBsonTypeDecodeType(bsontype.MaxKey, nil)
 }
 
 // BooleanDecodeValue is the ValueDecoderFunc for bool types.
@@ -742,53 +763,13 @@ func (dvd DefaultValueDecoders) EmptyInterfaceDecodeValue(dc DecodeContext, vr b
 		return fmt.Errorf("EmptyInterfaceDecodeValue can only be used to decode non-nil *interface{} values, provided type if %T", i)
 	}
 
-	// fn is a function we call to assign val back to the target, we do this so
-	// we can keep down on the repeated code in this method. In all of the
-	// implementations this is a closure, so we don't need to provide the
-	// target as a parameter.
-	var fn func()
-	var val interface{}
-	var rtype reflect.Type
+	decoder := dc.LookupBsonTypeDecoder(vr.Type())
 
-	switch vr.Type() {
-	case bsontype.Double:
-		val = new(float64)
-		rtype = tFloat64
-		fn = func() { *target = *(val.(*float64)) }
-	case bsontype.String:
-		val = new(string)
-		rtype = tString
-		fn = func() { *target = *(val.(*string)) }
-	case bsontype.Boolean:
-		val = new(bool)
-		rtype = tBool
-		fn = func() { *target = *(val.(*bool)) }
-	case bsontype.Int32:
-		val = new(int32)
-		rtype = tInt32
-		fn = func() { *target = *(val.(*int32)) }
-	case bsontype.Int64:
-		val = new(int64)
-		rtype = tInt64
-		fn = func() { *target = *(val.(*int64)) }
-	case bsontype.Decimal128:
-		val = new(decimal.Decimal128)
-		rtype = tDecimal
-		fn = func() { *target = *(val.(*decimal.Decimal128)) }
-	default:
-		return fmt.Errorf("Type %s is not a valid BSON type and has no default Go type to decode into", vr.Type())
-	}
-
-	decoder, err := dc.LookupDecoder(rtype)
-	if err != nil {
-		return err
-	}
-	err = decoder.DecodeValue(dc, vr, val)
+	err := decoder.DecodeValue(dc, vr, target)
 	if err != nil {
 		return err
 	}
 
-	fn()
 	return nil
 }
 
