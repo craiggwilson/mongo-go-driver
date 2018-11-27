@@ -55,7 +55,7 @@ type RegistryBuilder struct {
 	interfaceDecoders []interfaceValueDecoder
 	kindDecoders      map[reflect.Kind]ValueDecoder
 
-	bsonTypeMap map[bsontype.Type]reflect.Type
+	bsonTypeDecoders map[bsontype.Type]ValueDecoder
 }
 
 // A Registry is used to store and retrieve codecs for types and interfaces. This type is the main
@@ -87,7 +87,7 @@ func NewRegistryBuilder() *RegistryBuilder {
 		kindEncoders: make(map[reflect.Kind]ValueEncoder),
 		kindDecoders: make(map[reflect.Kind]ValueDecoder),
 
-		bsonTypeMap: make(map[bsontype.Type]reflect.Type),
+		bsonTypeDecoders: make(map[bsontype.Type]ValueDecoder),
 	}
 }
 
@@ -161,10 +161,10 @@ func (rb *RegistryBuilder) RegisterDefaultDecoder(kind reflect.Kind, dec ValueDe
 	return rb
 }
 
-// SetBsonTypeDecodeType will use the specified reflect type upon encountering the specified bsontype
-// when decoding into an empty interface.
-func (rb *RegistryBuilder) SetBsonTypeDecodeType(bt bsontype.Type, rt reflect.Type) *RegistryBuilder {
-	rb.bsonTypeMap[bt] = rt
+// RegisterBsonTypeDecoder will use the specified value decoder to decode the provided bsontype when decoding
+// to an empty interface.
+func (rb *RegistryBuilder) RegisterBsonTypeDecoder(bt bsontype.Type, dec ValueDecoder) *RegistryBuilder {
+	rb.bsonTypeDecoders[bt] = dec
 	return rb
 }
 
@@ -199,8 +199,8 @@ func (rb *RegistryBuilder) Build() *Registry {
 	}
 
 	registry.bsonTypeDecoders = make(map[bsontype.Type]ValueDecoder)
-	for bt, rt := range rb.bsonTypeMap {
-		registry.bsonTypeDecoders[bt], _ = registry.LookupDecoder(rt)
+	for bt, dec := range rb.bsonTypeDecoders {
+		registry.bsonTypeDecoders[bt] = dec
 	}
 
 	return registry

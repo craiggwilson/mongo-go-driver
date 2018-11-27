@@ -66,27 +66,27 @@ func (dvd DefaultValueDecoders) RegisterDefaultDecoders(rb *RegistryBuilder) {
 		RegisterDefaultDecoder(reflect.Slice, ValueDecoderFunc(dvd.SliceDecodeValue)).
 		RegisterDefaultDecoder(reflect.String, ValueDecoderFunc(dvd.StringDecodeValue)).
 		RegisterDefaultDecoder(reflect.Struct, &StructCodec{cache: make(map[reflect.Type]*structDescription), parser: DefaultStructTagParser}).
-		SetBsonTypeDecodeType(bsontype.Double, tFloat64).
-		SetBsonTypeDecodeType(bsontype.String, tString).
-		SetBsonTypeDecodeType(bsontype.EmbeddedDocument, tMap).
-		SetBsonTypeDecodeType(bsontype.Array, tEmptySlice).
-		SetBsonTypeDecodeType(bsontype.Binary, tByteSlice).
-		SetBsonTypeDecodeType(bsontype.Undefined, nil).
-		SetBsonTypeDecodeType(bsontype.ObjectID, tOID).
-		SetBsonTypeDecodeType(bsontype.Boolean, tBool).
-		SetBsonTypeDecodeType(bsontype.DateTime, tTime).
-		SetBsonTypeDecodeType(bsontype.Null, nil).
-		SetBsonTypeDecodeType(bsontype.Regex, nil).
-		SetBsonTypeDecodeType(bsontype.DBPointer, nil).
-		SetBsonTypeDecodeType(bsontype.JavaScript, nil).
-		SetBsonTypeDecodeType(bsontype.Symbol, nil).
-		SetBsonTypeDecodeType(bsontype.CodeWithScope, nil).
-		SetBsonTypeDecodeType(bsontype.Int32, tInt32).
-		SetBsonTypeDecodeType(bsontype.Timestamp, tTime).
-		SetBsonTypeDecodeType(bsontype.Int64, tInt64).
-		SetBsonTypeDecodeType(bsontype.Decimal128, nil).
-		SetBsonTypeDecodeType(bsontype.MinKey, nil).
-		SetBsonTypeDecodeType(bsontype.MaxKey, nil)
+		RegisterBsonTypeDecoder(bsontype.Double, ValueDecoderFunc(dvd.FloatDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.String, ValueDecoderFunc(dvd.StringDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.EmbeddedDocument, ValueDecoderFunc(dvd.MapDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Array, ValueDecoderFunc(dvd.SliceDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Binary, ValueDecoderFunc(dvd.ByteSliceDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Undefined, ValueDecoderFunc(dvd.NullDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.ObjectID, ValueDecoderFunc(dvd.ObjectIDDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Boolean, ValueDecoderFunc(dvd.BooleanDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.DateTime, ValueDecoderFunc(dvd.TimeDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Null, ValueDecoderFunc(dvd.NullDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Regex, nil).
+		RegisterBsonTypeDecoder(bsontype.DBPointer, nil).
+		RegisterBsonTypeDecoder(bsontype.JavaScript, nil).
+		RegisterBsonTypeDecoder(bsontype.Symbol, nil).
+		RegisterBsonTypeDecoder(bsontype.CodeWithScope, nil).
+		RegisterBsonTypeDecoder(bsontype.Int32, ValueDecoderFunc(dvd.IntDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Timestamp, nil).
+		RegisterBsonTypeDecoder(bsontype.Int64, ValueDecoderFunc(dvd.IntDecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.Decimal128, ValueDecoderFunc(dvd.Decimal128DecodeValue)).
+		RegisterBsonTypeDecoder(bsontype.MinKey, nil).
+		RegisterBsonTypeDecoder(bsontype.MaxKey, nil)
 }
 
 // BooleanDecodeValue is the ValueDecoderFunc for bool types.
@@ -459,6 +459,12 @@ func (dvd DefaultValueDecoders) ObjectIDDecodeValue(dc DecodeContext, vr bsonrw.
 		return fmt.Errorf("cannot decode %v into an ObjectID", vr.Type())
 	}
 
+	itarget, ok := i.(*interface{})
+	if ok {
+		*itarget = objectid.ObjectID{}
+		return ValueDecoderError{Name: "ObjectIDDecodeValue", Types: []interface{}{(*objectid.ObjectID)(nil)}, Received: i}
+	}
+
 	target, ok := i.(*objectid.ObjectID)
 	if !ok || target == nil {
 		return ValueDecoderError{Name: "ObjectIDDecodeValue", Types: []interface{}{(*objectid.ObjectID)(nil)}, Received: i}
@@ -770,6 +776,17 @@ func (dvd DefaultValueDecoders) EmptyInterfaceDecodeValue(dc DecodeContext, vr b
 		return err
 	}
 
+	return nil
+}
+
+// NullDecodeValue is a decoder for a bsontype.Null value.
+func (dvd DefaultValueDecoders) NullDecodeValue(dc DecodeContext, vr bsonrw.ValueReader, i interface{}) error {
+	target, ok := i.(*interface{})
+	if !ok || target == nil {
+		return nil
+	}
+
+	*target = nil
 	return nil
 }
 

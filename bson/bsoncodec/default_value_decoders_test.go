@@ -1361,6 +1361,23 @@ func TestDefaultValueDecoders(t *testing.T) {
 				nil,
 			},
 			{
+				"map[string]interface{}",
+				map[string]interface{}{"foo": oid},
+				func() []byte {
+					idx, doc := bsoncore.AppendDocumentStart(nil)
+					doc = bsoncore.AppendObjectIDElement(doc, "foo", oid)
+
+					// var idx2 int32
+					// idx2, doc = bsoncore.AppendDocumentStart(doc)
+					// doc = bsoncore.AppendInt32Element(doc, "a", 42)
+					// doc, _ = bsoncore.AppendDocumentEnd(doc, idx2)
+
+					doc, _ = bsoncore.AppendDocumentEnd(doc, idx)
+					return doc
+				}(),
+				nil,
+			},
+			{
 				"-",
 				struct {
 					A string `bson:"-"`
